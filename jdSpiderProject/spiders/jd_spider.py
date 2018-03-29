@@ -27,7 +27,7 @@ project_name: 项目名称
 """
 # TODO:数据库获取新项目
 search_parameter = [
-    {'project_name':'20180208_phone', 'market': '京东', 'min_price':'', 'max_price':'', 'key_word': '手机', 'page_number': 2}
+    {'project_name':'201803290B', 'market': '京东', 'min_price':'', 'max_price':'', 'key_word': '乳胶床垫', 'page_number': 5}
 ]
 
 
@@ -99,15 +99,15 @@ class JDSpider(Spider):
                 img_url_delay = goods.xpath(
                     "div/div[1]/a/img/@data-lazy-img").extract()
                 # 这个是没有加载出来的图片，这里不能写上数组取第一个[0]
-                price = goods.xpath("div/div[3]/strong/i/text()").extract()  #价格
-                item_name = goods.xpath("div/div[4]/a/em/text()").extract()
+                price = goods.xpath("div/div[2]/strong/i/text()").extract()  #价格
+                item_name = goods.xpath("div/div[3]/a/em/text()").extract()
                 shop_id = goods.xpath("div/div[7]/@ data-shopid").extract()
-                item_url = goods.xpath("div/div[1]/a/@href").extract()
-                comment_qty = goods.xpath("div/div[5]/strong/a/text()").extract()
+                item_url = goods.xpath("div/div[3]/a/@href").extract()
+                comment_qty = goods.xpath("div/div[4]/strong/a/text()").extract()
                 pid = goods.xpath("@data-pid").extract()
-                # product_id=goods.xpath("@data-sku").extract()
-                shop_name = goods.xpath("div/div[7]/span/a/text()").extract()
-
+                # product_id=goods.xpath("@data-sku").extract()//
+                shop_name = goods.xpath("div/div[5]/span/a/text()").extract()
+                shop_url = goods.xpath("div/div[5]/span/a/@href").extract()
                 if get_pids:
                     get_pids.add(pid[0])
                 if img_url_src:  # 如果img_url_src存在
@@ -123,14 +123,14 @@ class JDSpider(Spider):
                     items['price'] = 0
 
                 if item_name:
-                    items['item_name'] = item_name[0]
+                    items['item_name'] = ''.join(item_name)
                 else:
                     items['item_name'] = ''
 
                 # 店铺名字
-                if shop_id:
+                if shop_url:
                     #items['shop_id'] = shop_id[0]
-                    shop_url = "https://mall.jd.com/index-" + str(shop_id[0]) + ".html"
+                    shop_url = "https:"+ shop_url[0]
                     items['shop_url'] = shop_url
                 else:
                     items['shop_url'] = ''
@@ -145,20 +145,24 @@ class JDSpider(Spider):
                 else:
                     items['item_url'] = ''
 
+                print('!!!!!!!!!!!!!', comment_qty)
                 if comment_qty:
                     if '万' in comment_qty[0]:
                         items['comment_qty'] = str(int(float(comment_qty[0][:-2]) * 10000))
-                    else:
+                    elif len(comment_qty[0]) > 1:
                         items['comment_qty'] = comment_qty[0][:-1]
+                    else:
+                        items['comment_qty'] = comment_qty[0]
                 else:
-                    items['comment_qty'] = ''
+                    items['comment_qty'] = '-1'
+
                 # if product_id:
                 # 进一步爬取页面信息
                 #     print "******************进一步爬取页面信息*******************"
                 #     print self.comments_url.format(str(product_id[0]),str(self.count))
                 #     yield scrapy.Request(url=self.comments_url.format(str(product_id[0]),str(self.count)),callback=self.comments)
                 #yield scrapy.Request写在这里就是每解析一个键裤子就会调用回调函数一次
-                print(items)
+                print('#############',items['comment_qty'])
                 yield items
             # except Exception as e:
             #     print("******************ERROR***************")
@@ -184,14 +188,17 @@ class JDSpider(Spider):
             #try:
             lis = response.xpath("//li[@class='gl-item']")
             for li in lis:
-                item_url = li.xpath("div/div[1]/a/@href").extract()
                 img_url_1 = li.xpath("div/div[1]/a/img/@src").extract()
                 img_url_2 = li.xpath("div/div[1]/a/img/@data-lazy-img").extract()
-                item_name = li.xpath("div/div[4]/a/em/text()").extract()
-                price = li.xpath("div/div[3]/strong/i/text()").extract()
-                shop_id = li.xpath("div/div[7]/@data-shopid").extract()
-                comment_qty = li.xpath("div/div[5]/strong/a/text()").extract()
-                shop_name = li.xpath("div/div[7]/span/a/text()").extract()
+                price = li.xpath("div/div[2]/strong/i/text()").extract()  #价格
+                item_name = li.xpath("div/div[3]/a/em/text()").extract()
+                shop_id = li.xpath("div/div[7]/@ data-shopid").extract()
+                item_url = li.xpath("div/div[3]/a/@href").extract()
+                comment_qty = li.xpath("div/div[4]/strong/a/text()").extract()
+                pid = li.xpath("@data-pid").extract()
+                # product_id=goods.xpath("@data-sku").extract()//
+                shop_name = li.xpath("div/div[5]/span/a/text()").extract()
+                shop_url = li.xpath("div/div[5]/span/a/@href").extract()
 
                 items['page_number'] = response.meta['search_page']
                 items['job_id'] = response.meta['job_id']
@@ -209,7 +216,7 @@ class JDSpider(Spider):
                     items['img_url'] = ''
 
                 if item_name:
-                    items['item_name'] = item_name[0]
+                    items['item_name'] = ''.join(item_name)
                 else:
                     items['item_name'] = ''
 
@@ -232,11 +239,14 @@ class JDSpider(Spider):
                 if comment_qty:
                     if '万' in comment_qty[0]:
                         items['comment_qty'] = str(int(float(comment_qty[0][:-2]) * 10000))
-                    else:
+                    elif len(comment_qty[0]) > 1:
                         items['comment_qty'] = comment_qty[0][:-1]
+                    else:
+                        items['comment_qty'] = comment_qty[0]
                 else:
-                    items['comment_qty'] = ''
+                    items['comment_qty'] = '-1'
                 # 又一次的生成，这里是完整的数据，因此可以yield items
+                print('############',items['comment_qty'])
                 yield items
             # except Exception as e:
             #     print("*****error******")

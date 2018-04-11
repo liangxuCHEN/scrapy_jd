@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from scrapy.utils.project import get_project_settings  #导入seetings配置
-from sqlalchemy import create_engine, Column, String, DateTime, Integer, Float
+from sqlalchemy import create_engine, Column, String, DateTime, Integer, Float, func
 from sqlalchemy.ext.declarative import declarative_base
 #import redis
 

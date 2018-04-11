@@ -26,10 +26,15 @@ max_price: 选填，搜索得到宝贝价格的最高价
 project_name: 项目名称
 """
 # TODO:数据库获取新项目
-search_parameter = [
-    {'project_name':'201803290B', 'market': '京东', 'min_price':'', 'max_price':'', 'key_word': '乳胶床垫', 'page_number': 5}
-]
+# search_parameter = [
+#     {'project_name':'201803290B', 'market': '京东', 'min_price':'', 'max_price':'', 'key_word': '乳胶床垫', 'page_number': 5}
+# ]
 
+def get_project():
+    entity = Session.query(JdProjectModel).filter(
+        (JdProjectModel.status=='new') & 
+        (JdProjectModel.market=='京东')).all()
+    return [e.to_json() for e in entity]
 
 class JDSpider(Spider):
     name = 'JDSpider'
@@ -47,14 +52,12 @@ class JDSpider(Spider):
 
     def start_requests(self):
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+        search_parameter = get_project()
         for data in search_parameter:
             # 把项目添加到数据库
             # TODO: 如果在数据库拿的项目就是update
-            data['created'] = current_time
-            jd_project = JdProjectModel(**data)
+            jd_project = Session.query(JdProjectModel).filter_by(id=data['id']).first()
             jd_project.status = 'running'
-            Session.add(jd_project)
             Session.commit()
 
             for i in range(1 , data['page_number']):

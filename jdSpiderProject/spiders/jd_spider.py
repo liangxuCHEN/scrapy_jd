@@ -102,15 +102,21 @@ class JDSpider(Spider):
                 img_url_delay = goods.xpath(
                     "div/div[1]/a/img/@data-lazy-img").extract()
                 # 这个是没有加载出来的图片，这里不能写上数组取第一个[0]
-                price = goods.xpath("div/div[2]/strong/i/text()").extract()  #价格
-                item_name = goods.xpath("div/div[3]/a/em/text()").extract()
+                #price = goods.xpath("div/div[2]/strong/i/text()").extract()  #价格
+                price = goods.xpath("div/div[3]/strong/i/text()").extract()
+                item_name = goods.xpath("div/div[4]/a/em/text()").extract()
+                #item_name = goods.xpath("div/div[3]/a/em/text()").extract()
                 shop_id = goods.xpath("div/div[7]/@ data-shopid").extract()
-                item_url = goods.xpath("div/div[3]/a/@href").extract()
-                comment_qty = goods.xpath("div/div[4]/strong/a/text()").extract()
+                #item_url = goods.xpath("div/div[3]/a/@href").extract()
+                item_url = goods.xpath("div/div[1]/a/@href").extract()
+                #comment_qty = goods.xpath("div/div[4]/strong/a/text()").extract()
+                comment_qty = goods.xpath("div/div[5]/strong/a/text()").extract()
                 pid = goods.xpath("@data-pid").extract()
                 # product_id=goods.xpath("@data-sku").extract()//
-                shop_name = goods.xpath("div/div[5]/span/a/text()").extract()
-                shop_url = goods.xpath("div/div[5]/span/a/@href").extract()
+                #shop_name = goods.xpath("div/div[5]/span/a/text()").extract()
+                shop_name = goods.xpath("div/div[7]/span/a/text()").extract()
+                #shop_url = goods.xpath("div/div[5]/span/a/@href").extract()
+                shop_url = goods.xpath("div/div[7]/span/a/@href").extract()
                 if get_pids:
                     get_pids.add(pid[0])
                 if img_url_src:  # 如果img_url_src存在
@@ -131,12 +137,14 @@ class JDSpider(Spider):
                     items['item_name'] = ''
 
                 # 店铺名字
-                if shop_url:
+                if shop_id:
                     #items['shop_id'] = shop_id[0]
-                    shop_url = "https:"+ shop_url[0]
+                    shop_url = "https://mall.jd.com/index-" + str(shop_id[0]) + ".html"
+                    #shop_url = "https:"+ shop_url[0]
                     items['shop_url'] = shop_url
                 else:
-                    items['shop_url'] = ''
+                    print('xxxxxxxx', shop_url)
+                    items['shop_url'] = "https:"+ shop_url[0]
 
                 if shop_name:
                     items['shop_name'] = shop_name[0]
@@ -193,16 +201,26 @@ class JDSpider(Spider):
             for li in lis:
                 img_url_1 = li.xpath("div/div[1]/a/img/@src").extract()
                 img_url_2 = li.xpath("div/div[1]/a/img/@data-lazy-img").extract()
-                price = li.xpath("div/div[2]/strong/i/text()").extract()  #价格
-                item_name = li.xpath("div/div[3]/a/em/text()").extract()
+                
+                #version 2
+                #price = li.xpath("div/div[2]/strong/i/text()").extract()  #价格
+                #item_name = li.xpath("div/div[3]/a/em/text()").extract()
+
+                price = li.xpath("div/div[3]/strong/i/text()").extract()
+                item_name = li.xpath("div/div[4]/a/em/text()").extract()
+
                 shop_id = li.xpath("div/div[7]/@ data-shopid").extract()
-                item_url = li.xpath("div/div[3]/a/@href").extract()
-                comment_qty = li.xpath("div/div[4]/strong/a/text()").extract()
+                #item_url = li.xpath("div/div[3]/a/@href").extract()
+                item_url = li.xpath("div/div[1]/a/@href").extract()
+                #comment_qty = goods.xpath("div/div[4]/strong/a/text()").extract()
+                comment_qty = li.xpath("div/div[5]/strong/a/text()").extract()
+                #comment_qty = li.xpath("div/div[4]/strong/a/text()").extract()
                 pid = li.xpath("@data-pid").extract()
                 # product_id=goods.xpath("@data-sku").extract()//
-                shop_name = li.xpath("div/div[5]/span/a/text()").extract()
-                shop_url = li.xpath("div/div[5]/span/a/@href").extract()
-
+                #shop_name = li.xpath("div/div[5]/span/a/text()").extract()
+                shop_name = li.xpath("div/div[7]/span/a/text()").extract()
+                #shop_url = li.xpath("div/div[5]/span/a/@href").extract()
+                shop_url = li.xpath("div/div[7]/span/a/@href").extract()
                 items['page_number'] = response.meta['search_page']
                 items['job_id'] = response.meta['job_id']
 
@@ -219,7 +237,8 @@ class JDSpider(Spider):
                     items['img_url'] = ''
 
                 if item_name:
-                    items['item_name'] = ''.join(item_name)
+                    #items['item_name'] = ''.join(item_name)
+                    items['item_name'] = item_name[0]
                 else:
                     items['item_name'] = ''
 
@@ -232,7 +251,8 @@ class JDSpider(Spider):
                     # items['shop_id'] = shop_id[0]
                     items['shop_url'] = "https://mall.jd.com/index-" + str(shop_id[0]) + ".html"
                 else:
-                    items['shop_url'] = ''
+                    print('xxxxxxx', shop_url)
+                    items['shop_url'] = "https:"+ shop_url[0]
 
                 if shop_name:
                     items['shop_name'] = shop_name[0]
